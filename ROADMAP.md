@@ -11,19 +11,23 @@ behaviour regressed. Reading the code and agreeing with it is not enough. That i
 Legend: `[ok]` implemented and pinned by a named test -- `[part]` partial, with what is
 missing stated -- `[ ]` not implemented -- `[no]` deliberate non-goal.
 
+A Where cell marked `(to be written)` names the test that will pin the row once it exists; no
+such test has been written yet, and the row cannot leave `[ ]` until it has. The Milestone
+column places the row on the ladder in section 2, and `-` means it is not placed yet.
+
 Update the affected row in the same commit that changes the behaviour. A row and its test
 drift apart within one release, and the document becomes useless exactly when it is needed.
 
 ## 1. Obligations
 
-| Obligation | Spec | Status | Where |
-|---|---|---|---|
-| `mrt.iter_records()` | RFC 6396 | `[ ]` | `tests/test_obligations.py::iter_records` |
-| `rib.iter_rib_entries()` | RFC 6396 | `[ ]` | `tests/test_obligations.py::iter_rib_entries` |
-| `lpm.longest_match()` | RFC 6396 | `[ ]` | `tests/test_obligations.py::longest_match` |
-| `lpm.build_radix()` | design | `[ ]` | `tests/test_obligations.py::build_radix` |
-| `history.lookup_asn()` | design | `[ ]` | `tests/test_obligations.py::lookup_asn` |
-| `rov.annotate()` | RFC 6480 | `[ ]` | `tests/test_obligations.py::annotate` |
+| Obligation | Spec | Status | Where | Milestone |
+|---|---|---|---|---|
+| `mrt.iter_records()` | RFC 6396 | `[ ]` | `tests/test_obligations.py::test_iter_records` (to be written) | M1 |
+| `rib.iter_rib_entries()` | RFC 6396 | `[ ]` | `tests/test_obligations.py::test_iter_rib_entries` (to be written) | M1 |
+| `lpm.longest_match()` | design: equals a brute-force scan for the longest covering prefix over the same entries | `[ ]` | `tests/test_obligations.py::test_longest_match` (to be written) | M2 |
+| `lpm.build_radix()` | design | `[ ]` | `tests/test_obligations.py::test_build_radix` (to be written) | M2 |
+| `history.lookup_asn()` | design | `[ ]` | `tests/test_obligations.py::test_lookup_asn` (to be written) | M3 |
+| `rov.annotate()` | RFC 6480 | `[ ]` | `tests/test_obligations.py::test_annotate` (to be written) | M4 |
 
 ## 2. Milestones
 
@@ -53,6 +57,7 @@ the code existing. Coverage in `pyproject.toml` ratchets in the same commit.
 ## 5. Open questions
 
 - pure-Python radix versus an optional native one, decided by a benchmark on a full RIB
+- M5 (CLI parity with pyasn) has no row: add one naming the CLI surface, or drop the rung
 
 ## 6. Publication checklist
 

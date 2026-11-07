@@ -23,12 +23,15 @@ __all__ = [
 
 
 def longest_match(tree: Radix, address: str) -> RibEntry | None:
-    """Pending behaviour defined by RFC 6396.
+    """Pending behaviour defined by design: equals a brute-force scan for the longest
+    covering prefix over the same entries.
 
     Not implemented yet. See the ``lpm.longest_match()`` row in ROADMAP.md; this stub
     raises on purpose so nothing downstream mistakes it for working code.
     """
-    raise NotImplementedError("longest_match() is not implemented: RFC 6396")
+    raise NotImplementedError(
+        "longest_match() is not implemented: design: equals a brute-force scan for the longest covering prefix over the same entries"
+    )
 
 
 def build_radix(entries: Iterable) -> Radix:

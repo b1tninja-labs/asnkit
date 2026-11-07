@@ -17,7 +17,11 @@ import asnkit as package
 SURFACE = [
     ("mrt", "iter_records", "RFC 6396"),
     ("rib", "iter_rib_entries", "RFC 6396"),
-    ("lpm", "longest_match", "RFC 6396"),
+    (
+        "lpm",
+        "longest_match",
+        "design: equals a brute-force scan for the longest covering prefix over the same entries",
+    ),
     ("lpm", "build_radix", "design"),
     ("history", "lookup_asn", "design"),
     ("rov", "annotate", "RFC 6480"),
@@ -38,7 +42,10 @@ def test_surface_is_documented(module_name, fn, cite):
     module = importlib.import_module(package.__name__ + "." + module_name)
     target = getattr(module, fn)
     assert target.__doc__, fn + " needs a docstring"
-    assert cite in target.__doc__, fn + " must cite the document that defines it"
+    # Docstrings are wrapped, so a long citation can span a line break; compare words, not layout.
+    assert " ".join(cite.split()) in " ".join(target.__doc__.split()), (
+        fn + " must cite the document that defines it"
+    )
 
 
 @pytest.mark.parametrize(("module_name", "fn", "cite"), SURFACE)
