@@ -64,11 +64,11 @@ path = "asnkit/__init__.py"
 packages = ["asnkit"]
 
 [tool.hatch.build.targets.sdist]
-include = ["/asnkit/", "/tests/", "/docs/", "/README.md", "/ROADMAP.md", "/CHANGELOG.md", "/LICENSE", "/NOTICE"]
+include = ["/asnkit/", "/tests/", "/tools/fetch_corpus.py", "/tools/corpus.json", "/docs/", "/README.md", "/ROADMAP.md", "/CHANGELOG.md", "/LICENSE", "/NOTICE"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["."]
+pythonpath = [".", "../pathattr"]
 asyncio_mode = "auto"
 addopts = "-ra"
 
@@ -81,7 +81,7 @@ source = ["asnkit"]
 # coverage for the line that raises. Raise this in the commit that implements a
 # milestone, never in a commit that only adds tests, so the number keeps meaning
 # "this behaviour is exercised" rather than "this file was imported".
-fail_under = 45
+fail_under = 94
 show_missing = true
 exclude_lines = [
   "if __name__ == .__main__.:",
@@ -116,3 +116,5 @@ warn_unused_ignores = true
 warn_redundant_casts = true
 no_implicit_optional = true
 ignore_missing_imports = true
+# pathattr (BGP attributes) is an unpublished sibling; the path comes out when it publishes.
+mypy_path = "../pathattr"

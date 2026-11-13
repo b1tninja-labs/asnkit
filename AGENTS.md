@@ -57,7 +57,7 @@ rather than merely incomplete.
 4. **Dependencies.** `pyproject.toml` here declares no runtime dependencies and no
    third-party extras. Standard library only, except that the `cryptography` package may be
    used for cryptographic primitives (this project needs none). Everything else, MRT and BGP
-   attribute decoding included, is ours; siblings such as `pathattr` are used by path. A native
+   attribute decoding included, is ours; siblings such as `pathattr` are used by path (`pythonpath` and `mypy_path` in `pyproject.toml` name `../pathattr`, and CI checks it out). Real archive files are never vendored: `tools/fetch_corpus.py` fetches the pinned files of `tools/corpus.json` into a cache outside the tree (`ASNKIT_CORPUS_DIR`, else the user cache directory), one request per second, and `tests/test_mrt_corpus.py` skips loudly without them. Files are found by SHA-256, so several projects' cache variables may name one directory. The corpus tests take about 12 seconds and run with the default gates; fetch first with `python tools/fetch_corpus.py`. A native
    extension is not allowed (ROADMAP.md, section 5).
 5. **Scope.** What is deliberately absent is listed under Non-goals in `README.md`.
    An agent that "helpfully" implements a non-goal has expanded the API surface that

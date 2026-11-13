@@ -7,27 +7,31 @@ extension out of a Python 2 lineage with no type hints, no async and no ROV stat
 from __future__ import annotations
 
 from . import apps, cli, history, lpm, mrt, rib, rov
-from .history import lookup_asn
+from .history import Archive, lookup, lookup_asn
 from .lpm import build_radix, longest_match
-from .mrt import iter_records
-from .rib import iter_rib_entries
+from .mrt import iter_bgp4mp, iter_records
+from .rib import iter_rib_entries, origin_of
 from .rov import annotate
 
 __version__ = "0.1.0"
 
 __all__ = [
+    "Archive",
     "__version__",
     "annotate",
     "apps",
     "build_radix",
     "cli",
     "history",
+    "iter_bgp4mp",
     "iter_records",
     "iter_rib_entries",
     "longest_match",
+    "lookup",
     "lookup_asn",
     "lpm",
     "mrt",
+    "origin_of",
     "rib",
     "rov",
 ]

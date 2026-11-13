@@ -1,0 +1,35 @@
+{
+  "about": "Real MRT files read by tests/test_mrt_corpus.py. Fetched by tools/fetch_corpus.py into a cache outside the repository; never vendored. Each pin is the file as served on the read date.",
+  "files": [
+    {
+      "name": "routeviews-iraq-ixp.bgw-rib.20261112.0000.bz2",
+      "url": "https://archive.routeviews.org/iraq-ixp.bgw/bgpdata/2026.11/RIBS/rib.20261112.0000.bz2",
+      "kind": "TABLE_DUMP_V2 RIB (bview)",
+      "why": "the smallest RIB of 31 RouteViews and 23 RIS collectors measured with HEAD on 2026-11-13 for 2026-11-12 00:00 (next: pacwave.lax 1,219,521 octets; largest RIS rrc25 461,649,312); 13 peers, IPv4 and IPv6",
+      "read": "2026-11-13",
+      "terms": "RouteViews, https://www.routeviews.org/routeviews/ read 2026-11-13: data licensed CC BY 4.0, attribution to RouteViews and citation by DOI 10.7264/1y7v-2d90; commercial terms at https://www.routeviews.org/routeviews/licenses/ (not read). Not vendored.",
+      "sha256": "3648576db6b270d1f99d3d4e24abbb305d338a622688912206e990b51042306d",
+      "size": 7000
+    },
+    {
+      "name": "routeviews-route-views2-updates.20261112.0000.bz2",
+      "url": "https://archive.routeviews.org/bgpdata/2026.11/UPDATES/updates.20261112.0000.bz2",
+      "kind": "BGP4MP updates, 15 minutes",
+      "why": "route-views2 is the original multi-peer RouteViews collector; one 15-minute file, 1,667,418 octets by HEAD",
+      "read": "2026-11-13",
+      "terms": "RouteViews, https://www.routeviews.org/routeviews/ read 2026-11-13: CC BY 4.0, attribution to RouteViews, DOI 10.7264/1y7v-2d90. Not vendored.",
+      "sha256": "7ae4a8f406351d8c9bdefe58e9d54a7b0db477afb3aa4efc2e97a74d063191a1",
+      "size": 1667418
+    },
+    {
+      "name": "ris-rrc00-updates.20261112.0000.gz",
+      "url": "https://data.ris.ripe.net/rrc00/2026.11/updates.20261112.0000.gz",
+      "kind": "BGP4MP updates, 5 minutes",
+      "why": "rrc00 is the RIS multihop collector with peers worldwide; one 5-minute file, 5,876,534 octets by HEAD; rrc26 is 447,126 by HEAD",
+      "read": "2026-11-13",
+      "terms": "RIPE NCC Website and Publicly Available RIPE NCC Services Terms of Service, https://www.ripe.net/about-us/legal/terms-of-service/ read 2026-11-13: article 3.5 forbids re-distribution unless the service permits it; RIS commercial-use page requires acknowledging the RIPE NCC and RIPE RIS. The raw-data terms page linked from ripe.net returned 404. Not vendored.",
+      "sha256": "824f9ff95636d83b2a7479ae2737a97a923fe80c16e4da102dc2694483af8e84",
+      "size": 5876534
+    }
+  ]
+}
