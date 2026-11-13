@@ -16,6 +16,7 @@ import asnkit as package
 
 SURFACE = [
     ("mrt", "iter_records", "RFC 6396"),
+    ("mrt", "parse_peer_index_table", "RFC 6396"),
     ("rib", "iter_rib_entries", "RFC 6396"),
     (
         "lpm",

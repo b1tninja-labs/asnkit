@@ -5,14 +5,15 @@
      the badges stay commented out until the tag exists.
 -->
 
-**Pre-alpha shell.** The package surface, the obligation matrix and the CI gates exist.
-No protocol behaviour is implemented: every public function raises `NotImplementedError`,
-and the test suite records that rather than hiding it. Read
+**Pre-alpha.** Implemented so far: the MRT common header and Extended Timestamp reader
+(`mrt.iter_records`), the PEER_INDEX_TABLE decoder, and the pure-Python radix longest-prefix
+match (`lpm.build_radix`, `lpm.longest_match`). Everything else (RIB entries, history, ROV)
+still raises `NotImplementedError`, and the test suite records that rather than hiding it. Read
 [ROADMAP.md](ROADMAP.md) before depending on any of it.
 
 asnkit -- prefix to ASN, current and historical
 
-pyasn is the tool everyone uses and it stopped moving in 2023: 1.6.2, 2023-09-01, a C extension out of a Python 2 lineage with no type hints, no async and no ROV state. MRT parsing alone is covered by a dozen one-off scripts; what is missing is a typed library that answers the question an operator actually asks, which AS, on which date, and what did RPKI say about it, while streaming its input instead of demanding a build step. The RIB index sits behind an interface so the pure-Python radix and an optional native one are interchangeable.
+pyasn is the tool everyone uses and it stopped moving in 2023: 1.6.2, 2023-09-01, a C extension out of a Python 2 lineage with no type hints, no async and no ROV state. MRT parsing alone is covered by a dozen one-off scripts; what is missing is a typed library that answers the question an operator actually asks, which AS, on which date, and what did RPKI say about it, while streaming its input instead of demanding a build step. The radix is pure Python; a native extension is deliberately not planned (see ROADMAP.md).
 
 ## The gap, with a date
 
@@ -45,11 +46,12 @@ document, which is the honest grain size for a plan. See [docs/rfc-map.md](docs/
 | RFC 4271 | Draft Standard | 2006-01 | UPDATE and path attribute semantics inside a table dump |
 | RFC 6480 | Informational | 2012-02 | what a validation state joined onto a RIB row means |
 | RFC 8210 | Proposed Standard | 2017-09 | a live feed via rtrkit instead of a static dump |
+| RFC 8050 | Proposed Standard | 2017-05 | MRT with ADD-PATH: the `*_ADDPATH` subtypes of RFC 6396 |
 
 ### Errata watch
 
 - RFC 4271 carries 9 verified errata and 12 updates. Consult them before trusting any UPDATE parsing recipe copied from a blog post.
-- RFC 6396 carries 2 verified errata.
+- RFC 6396 carries 2 verified errata, both in the Appendix A example bytes; tests use the corrected bytes only.
 
 ## Module layout
 
@@ -61,11 +63,19 @@ document, which is the honest grain size for a plan. See [docs/rfc-map.md](docs/
 | `history` | date-scoped indexes over multiple RIB dumps |
 | `rov` | origin validation join from rtrkit or an rpkit assertion set (RFC 6480) |
 
+## Dependencies
+
+Standard library only, with no runtime dependencies. If one were ever needed, the `cryptography`
+package is the only third-party package permitted, and only for cryptographic primitives; MRT,
+BGP attributes and every other wire format are ours. Sibling projects (`pathattr` for AS_PATH
+decoding) are used by path, never from PyPI.
+
 ## What it does not do
 
 - a BGP speaker or session FSM
 - flow data
 - a hosted API that hides where the answer came from
+- a native (compiled) radix extension: it would break the standard-library-only rule
 
 
 ## Install

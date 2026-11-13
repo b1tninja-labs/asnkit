@@ -54,9 +54,11 @@ rather than merely incomplete.
 3. **Normative text is never paraphrased from memory.** Fetch it with `rfclib` and
    cite the section. If the text you fetch does not say what the obligation claims,
    the obligation is wrong: fix the roadmap row and say so in the commit.
-4. **Dependencies.** `pyproject.toml` here declares no runtime dependencies. Adding a runtime
-   dependency needs a paragraph of justification in `docs/strategy.md` explaining
-   why the standard library is not enough.
+4. **Dependencies.** `pyproject.toml` here declares no runtime dependencies and no
+   third-party extras. Standard library only, except that the `cryptography` package may be
+   used for cryptographic primitives (this project needs none). Everything else, MRT and BGP
+   attribute decoding included, is ours; siblings such as `pathattr` are used by path. A native
+   extension is not allowed (ROADMAP.md, section 5).
 5. **Scope.** What is deliberately absent is listed under Non-goals in `README.md`.
    An agent that "helpfully" implements a non-goal has expanded the API surface that
    has to be supported forever.

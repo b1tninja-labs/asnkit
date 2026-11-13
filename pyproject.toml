@@ -46,7 +46,6 @@ dev = [
   # first being able to build one, so the build dependency belongs in the dev group.
   "build",
 ]
-fast = ["msgspec>0.19"]
 
 [project.urls]
 Homepage = "https://github.com/b1tninja/asnkit"
