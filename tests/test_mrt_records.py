@@ -376,6 +376,47 @@ def test_bgp4mp_message_length_must_match_the_record():
         list(mrt.iter_bgp4mp(io.BytesIO(frame(mrt.BGP4MP, 4, body))))
 
 
+def test_bgp4mp_tolerant_mode():
+    """Row ``mrt.tolerant-bgp4mp``: a defective message is kept with its reason, a record whose
+    fixed fields are unreadable goes to ``on_error`` and is yielded raw, and the stream goes on."""
+    longer = KEEPALIVE + b"\x00"
+    short = KEEPALIVE[:10]
+    good = frame(mrt.BGP4MP, 4, bgp4mp_body(1, 2, 1, bytes(4), bytes(4), KEEPALIVE, as4=True))
+    trailing = frame(mrt.BGP4MP, 4, bgp4mp_body(1, 2, 1, bytes(4), bytes(4), longer, as4=True))
+    cut = frame(mrt.BGP4MP, 4, bgp4mp_body(1, 2, 1, bytes(4), bytes(4), short, as4=True))
+    # Address Family 7 is neither IPv4 nor IPv6: nothing can be attributed to a peer.
+    unreadable = frame(mrt.BGP4MP, 4, struct.pack(">IIHH", 1, 2, 1, 7) + bytes(8))
+    stream = io.BytesIO(good + trailing + cut + unreadable + good)
+    errors: list[tuple[int, str]] = []
+    items = list(
+        mrt.iter_bgp4mp(
+            stream, tolerant=True, on_error=lambda r, why: errors.append((r.subtype, why))
+        )
+    )
+    assert [type(i).__name__ for i in items] == [
+        "Bgp4mpMessage",
+        "Bgp4mpMessage",
+        "Bgp4mpMessage",
+        "MrtRecord",
+        "Bgp4mpMessage",
+    ]
+    assert items[0].defect is None
+    assert "disagrees" in items[1].defect
+    assert items[1].message == longer
+    assert "shorter" in items[2].defect
+    assert items[2].message == short
+    assert items[4].defect is None
+    assert len(errors) == 1
+    assert errors[0][0] == 4
+    assert "Address Family 7" in errors[0][1]
+    # without the flag the same stream still refuses at the first defect, and says what
+    with pytest.raises(mrt.MrtError, match="disagrees"):
+        list(mrt.iter_bgp4mp(io.BytesIO(good + trailing)))
+    # without on_error the unreadable record is still yielded raw rather than raised
+    again = list(mrt.iter_bgp4mp(io.BytesIO(unreadable), tolerant=True))
+    assert isinstance(again[0], mrt.MrtRecord)
+
+
 def test_state_change_with_trailing_octets_is_refused():
     body = bgp4mp_body(1, 2, 1, bytes(4), bytes(4), struct.pack(">HH", 1, 2) + b"\x00", as4=True)
     with pytest.raises(mrt.MrtError, match="follow"):

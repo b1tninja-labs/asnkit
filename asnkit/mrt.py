@@ -26,7 +26,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable, Iterator
     from typing import IO
 
 __all__ = [
@@ -402,7 +402,9 @@ class Bgp4mpMessage:
     type, undecoded. ``as4`` is true when the AS number fields are four octets, ``local`` when
     the message was generated locally (the ``_LOCAL`` subtypes), and ``addpath`` for the RFC
     8050 subtypes 8-11, which tell the reader that the NLRI inside ``message`` carry Path
-    Identifiers. ``microseconds`` is set for BGP4MP_ET.
+    Identifiers. ``microseconds`` is set for BGP4MP_ET. ``defect`` is None for a message that is
+    exactly one BGP message of the length it declares; a tolerant read (``parse_bgp4mp(...,
+    tolerant=True)``) keeps a record that is not, with the octets as found and the reason here.
     """
 
     timestamp: int
@@ -418,6 +420,7 @@ class Bgp4mpMessage:
     as4: bool
     local: bool
     addpath: bool
+    defect: str | None = None
 
 
 @dataclass(frozen=True)
@@ -450,7 +453,7 @@ def _address(reader: _Reader, afi: int) -> ipaddress.IPv4Address | ipaddress.IPv
     raise MrtError(f"BGP4MP Address Family {afi} is neither IPv4 (1) nor IPv6 (2)")
 
 
-def parse_bgp4mp(record: MrtRecord) -> Bgp4mpMessage | Bgp4mpStateChange:
+def parse_bgp4mp(record: MrtRecord, *, tolerant: bool = False) -> Bgp4mpMessage | Bgp4mpStateChange:
     """Decode a BGP4MP or BGP4MP_ET record (RFC 6396 section 4.4, RFC 8050 section 3).
 
     ``MrtError`` for another type, for a subtype that is not a state change or message
@@ -458,6 +461,12 @@ def parse_bgp4mp(record: MrtRecord) -> Bgp4mpMessage | Bgp4mpStateChange:
     for a BGP message whose Length field disagrees with the record (section 4.4.2: only one
     BGP message is encoded, in full). The peer and local addresses are those of the MRT
     header, which the Address Family covers (section 4.4.2).
+
+    With ``tolerant`` a BGP message that is cut short, longer than its Length field, or shorter
+    than the 19-octet header is returned all the same, its octets exactly as the record holds them
+    and the reason in :attr:`Bgp4mpMessage.defect`; real archives hold such records. Everything
+    before the message (subtype, Address Family, the fixed fields) still raises, because without
+    it there is no peer to attribute the record to.
     """
     if record.type not in (BGP4MP, BGP4MP_ET):
         raise MrtError(f"type {record.type} is not BGP4MP or BGP4MP_ET")
@@ -492,13 +501,17 @@ def parse_bgp4mp(record: MrtRecord) -> Bgp4mpMessage | Bgp4mpStateChange:
             as4,
         )
     message = reader.take(reader.remaining)
+    defect = None
     if len(message) < 19:
-        raise MrtError(f"BGP message of {len(message)} octets is shorter than its 19-octet header")
-    (declared,) = struct.unpack(">H", message[16:18])
-    if declared != len(message):
-        raise MrtError(
-            f"BGP message Length {declared} disagrees with {len(message)} octets in the record"
-        )
+        defect = f"BGP message of {len(message)} octets is shorter than its 19-octet header"
+    else:
+        (declared,) = struct.unpack(">H", message[16:18])
+        if declared != len(message):
+            defect = (
+                f"BGP message Length {declared} disagrees with {len(message)} octets in the record"
+            )
+    if defect is not None and not tolerant:
+        raise MrtError(defect)
     return Bgp4mpMessage(
         record.timestamp,
         record.microseconds,
@@ -513,11 +526,16 @@ def parse_bgp4mp(record: MrtRecord) -> Bgp4mpMessage | Bgp4mpStateChange:
         as4,
         local,
         addpath,
+        defect,
     )
 
 
 def iter_bgp4mp(
-    stream: IO[bytes], *, max_record: int = 1 << 24
+    stream: IO[bytes],
+    *,
+    max_record: int = 1 << 24,
+    tolerant: bool = False,
+    on_error: Callable[[MrtRecord, str], None] | None = None,
 ) -> Iterator[Bgp4mpMessage | Bgp4mpStateChange | MrtRecord]:
     """Yield the records of ``stream``, BGP4MP and BGP4MP_ET decoded (RFC 6396 section 4.4).
 
@@ -525,11 +543,25 @@ def iter_bgp4mp(
     :class:`MrtRecord` it is, so nothing in an updates file is dropped. A malformed BGP4MP
     record raises ``MrtError`` (see :func:`parse_bgp4mp`); framing errors are those of
     :func:`iter_records`, and ``max_record`` is passed through.
+
+    With ``tolerant`` the reading survives what archives really hold. A message with a bad Length
+    or trailing octets is yielded with its ``defect`` set (see :func:`parse_bgp4mp`); a BGP4MP
+    record whose fixed fields cannot be read is passed to ``on_error(record, reason)`` and yielded
+    as the raw :class:`MrtRecord`, so the stream goes on and nothing disappears. Framing errors of
+    the stream itself still raise: after a bad MRT length the next record cannot be found.
     """
     for record in iter_records(stream, max_record=max_record):
         if record.type in (BGP4MP, BGP4MP_ET) and (
             record.subtype in _BGP4MP_MESSAGE or record.subtype in _BGP4MP_STATE_CHANGE
         ):
-            yield parse_bgp4mp(record)
+            if not tolerant:
+                yield parse_bgp4mp(record)
+                continue
+            try:
+                yield parse_bgp4mp(record, tolerant=True)
+            except MrtError as error:
+                if on_error is not None:
+                    on_error(record, str(error))
+                yield record
         else:
             yield record
